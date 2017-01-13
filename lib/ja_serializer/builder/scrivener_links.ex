@@ -9,7 +9,7 @@ if Code.ensure_loaded?(Scrivener) do
 
     @spec build(map) :: map
     def build(%{data: data = %Scrivener.Page{}, opts: opts, conn: conn}) do
-      base = opts[:page][:base_url] || conn.request_path
+      base = opts[:page][:base_url] || base_url(conn)
 
       data
       |> pages
@@ -32,7 +32,7 @@ if Code.ensure_loaded?(Scrivener) do
     defp page_url(num, base, page_size, orginal_params) do
       params =
         orginal_params
-        |> Map.merge(%{page_key => %{page_number_key => num, page_size_key => page_size}})
+        |> Map.merge(%{page_key() => %{page_number_key() => num, page_size_key() => page_size}})
         |> Plug.Conn.Query.encode
 
       "#{base}?#{params}"
@@ -48,6 +48,10 @@ if Code.ensure_loaded?(Scrivener) do
 
     defp page_size_key do
       Application.get_env(:ja_serializer, :page_size_key, format_key("page_size"))
+    end
+
+    defp base_url(conn) do
+      Application.get_env(:ja_serializer, :scrivener_base_url, conn.request_path)
     end
   end
 end
