@@ -13,7 +13,7 @@ defmodule JaSerializer.SerializerTest do
     has_many :comments
 
     def attributes(article, conn) do
-      super(article, conn) |> Dict.take([:title])
+      super(article, conn) |> Map.take([:title])
     end
 
     def comments(_a, _c), do: [:bar]
@@ -55,5 +55,19 @@ defmodule JaSerializer.SerializerTest do
     article = %TestModel.Article{title: "test", body: "test", comments: [:foo]}
     assert @serializer.comments(article, %{}) == [:foo]
     assert @view.comments(article, %{}) == [:bar]
+  end
+
+  test "it should pluralize the type when declared in config" do
+    Application.put_env(:ja_serializer, :pluralize_types, true)
+
+    defmodule NewArticleSerializer do
+      use JaSerializer
+      attributes [:title, :body]
+      has_many :comments
+    end
+
+    assert NewArticleSerializer.type() == "new-articles"
+
+    Application.delete_env(:ja_serlializer, :pluralized_types)
   end
 end

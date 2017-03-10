@@ -302,7 +302,7 @@ by passing your owns links in.
 ### Custom
 
 JaSerializer allows custom pagination via the `page` option. The `page` option
-expects to receive a `Dict` with URL values for `first`, `next`, `prev`,
+expects to receive a `Map` with URL values for `first`, `next`, `prev`,
 and `last`.
 
 For example:
@@ -416,6 +416,16 @@ defimpl JaSerializer.Formatter, for: [MyStruct] do
   def format(struct), do: struct
 end
 ```
+
+### Pluralizing All Types By Default
+
+You can opt-in to pluralizing all types for default:
+
+```elixir
+config :ja_serializer,
+  pluralize_types: true
+```
+
 
 ## Complimentary Libraries
 
