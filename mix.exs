@@ -3,15 +3,15 @@ defmodule JaSerializer.Mixfile do
 
   def project do
     [app: :ja_serializer,
-     version: "0.11.2",
+     version: "0.12.0",
      elixir: "~> 1.1",
      build_embedded: Mix.env == :prod,
      start_permanent: Mix.env == :prod,
      consolidate_protocols: Mix.env != :test,
      source_url: "https://github.com/vt-elixir/ja_serializer",
-     package: package,
-     description: description,
-     deps: deps]
+     package: package(),
+     description: description(),
+     deps: deps()]
   end
 
   # Configuration for the OTP application
@@ -23,7 +23,7 @@ defmodule JaSerializer.Mixfile do
     [
       {:inflex, "~> 1.4"},
       {:plug, "> 1.0.0"},
-      {:poison, "~> 1.4 or ~> 2.0"},
+      {:poison, ">= 1.4.0"},
       {:ecto, "~> 1.1 or ~> 2.0", only: :test},
       {:earmark, "~> 0.1", only: :dev},
       {:inch_ex, "~> 0.4", only: :docs},

@@ -60,7 +60,7 @@ defmodule JaSerializer.Builder.ScrivenerLinksTest do
       serializer: PersonSerializer,
       opts: []
     }
-    links = ScrivenerLinks.build(context) |> Dict.keys |> Enum.sort
+    links = ScrivenerLinks.build(context) |> Map.keys |> Enum.sort
     assert Enum.sort([:self, :last, :next]) == links
   end
 
@@ -76,7 +76,7 @@ defmodule JaSerializer.Builder.ScrivenerLinksTest do
       serializer: PersonSerializer,
       opts: []
     }
-    links = ScrivenerLinks.build(context) |> Dict.keys |> Enum.sort
+    links = ScrivenerLinks.build(context) |> Map.keys |> Enum.sort
     assert Enum.sort([:self, :first, :prev, :last, :next]) == links
   end
 
@@ -92,7 +92,7 @@ defmodule JaSerializer.Builder.ScrivenerLinksTest do
       serializer: PersonSerializer,
       opts: []
     }
-    links = ScrivenerLinks.build(context) |> Dict.keys |> Enum.sort
+    links = ScrivenerLinks.build(context) |> Map.keys |> Enum.sort
     assert Enum.sort([:self, :first, :prev]) == links
   end
 
@@ -108,7 +108,7 @@ defmodule JaSerializer.Builder.ScrivenerLinksTest do
       serializer: PersonSerializer,
       opts: []
     }
-    links = ScrivenerLinks.build(context) |> Dict.keys |> Enum.sort
+    links = ScrivenerLinks.build(context) |> Map.keys |> Enum.sort
     assert Enum.sort([:self]) == links
   end
 
@@ -150,5 +150,51 @@ defmodule JaSerializer.Builder.ScrivenerLinksTest do
     links = ScrivenerLinks.build(context)
 
     assert links[:first] == "/api/v2/posts?page[page]=1&page[page-size]=20"
+  end
+
+  test "base_url can be configured globally" do
+    Application.put_env(:ja_serializer, :scrivener_base_url, "http://api.example.com")
+
+    page = %Scrivener.Page{
+      page_number: 10,
+      page_size: 20,
+      total_pages: 30
+    }
+    context = %{
+      data: page,
+      conn: %Plug.Conn{query_params: %{}},
+      serializer: PersonSerializer,
+      opts: []
+    }
+    links = ScrivenerLinks.build(context)
+    assert URI.decode(links[:first]) == "http://api.example.com?page[page]=1&page[page-size]=20"
+    assert URI.decode(links[:prev]) == "http://api.example.com?page[page]=9&page[page-size]=20"
+    assert URI.decode(links[:next]) == "http://api.example.com?page[page]=11&page[page-size]=20"
+    assert URI.decode(links[:last]) == "http://api.example.com?page[page]=30&page[page-size]=20"
+
+    Application.delete_env(:ja_serializer, :scrivener_base_url)
+  end
+
+  test "base_url can be overridden locally" do
+    Application.put_env(:ja_serializer, :scrivener_base_url, "http://api.example.com")
+
+    page = %Scrivener.Page{
+      page_number: 10,
+      page_size: 20,
+      total_pages: 30
+    }
+    context = %{
+      data: page,
+      conn: %Plug.Conn{query_params: %{}},
+      serializer: PersonSerializer,
+      opts: [page: [base_url: "http://api2.example.com"]]
+    }
+    links = ScrivenerLinks.build(context)
+    assert URI.decode(links[:first]) == "http://api2.example.com?page[page]=1&page[page-size]=20"
+    assert URI.decode(links[:prev]) == "http://api2.example.com?page[page]=9&page[page-size]=20"
+    assert URI.decode(links[:next]) == "http://api2.example.com?page[page]=11&page[page-size]=20"
+    assert URI.decode(links[:last]) == "http://api2.example.com?page[page]=30&page[page-size]=20"
+
+    Application.delete_env(:ja_serializer, :scrivener_base_url)
   end
 end
