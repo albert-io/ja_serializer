@@ -9,7 +9,11 @@ defmodule JaSerializer.Builder.Relationship do
   def build(%{serializer: serializer, data: data, conn: conn, opts: opts} = context) do
     case opts[:relationships] do
       false -> []
-      _ -> Enum.map serializer.relationships(data, conn), &(build(&1, context))
+      _ ->
+        data
+        |> serializer.relationships(conn)
+        |> filter_relationships(serializer.type(context.data, context.conn), opts[:fields])
+        |> Enum.map(&build(&1, context))
     end
   end
 
@@ -19,6 +23,19 @@ defmodule JaSerializer.Builder.Relationship do
     |> add_links(definition, context)
     |> add_data(definition, context)
   end
+
+  defp filter_relationships(relationships, type, fields) when is_map(fields) do
+    sanitized_fields =
+      fields
+      |> Map.get(type)
+      |> safe_atom_list
+      |> MapSet.new
+
+    Enum.filter(relationships, fn {name, _definition} ->
+      MapSet.member?(sanitized_fields, name)
+    end)
+  end
+  defp filter_relationships(relationships, _type, _fields), do: relationships
 
   defp add_links(relation, definition, context) do
     definition.links
@@ -54,5 +71,10 @@ defmodule JaSerializer.Builder.Relationship do
       nil  -> false
       includes -> is_list(includes[name])
     end
+  end
+
+  defp safe_atom_list(nil), do: []
+  defp safe_atom_list(field_str) do
+    field_str |> String.split(",") |> Enum.map(&String.to_existing_atom/1)
   end
 end
