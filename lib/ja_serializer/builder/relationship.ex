@@ -25,15 +25,19 @@ defmodule JaSerializer.Builder.Relationship do
   end
 
   defp filter_relationships(relationships, type, fields) when is_map(fields) do
-    sanitized_fields =
-      fields
-      |> Map.get(type)
-      |> safe_atom_list
-      |> MapSet.new
+    if Map.has_key?(fields, type) do
+      sanitized_fields =
+        fields
+        |> Map.get(type)
+        |> safe_atom_list
+        |> MapSet.new
 
-    Enum.filter(relationships, fn {name, _definition} ->
-      MapSet.member?(sanitized_fields, name)
-    end)
+      Enum.filter(relationships, fn {name, _definition} ->
+        MapSet.member?(sanitized_fields, name)
+      end)
+    else
+      relationships
+    end
   end
   defp filter_relationships(relationships, _type, _fields), do: relationships
 
