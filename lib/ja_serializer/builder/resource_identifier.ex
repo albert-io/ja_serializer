@@ -53,9 +53,9 @@ defmodule JaSerializer.Builder.ResourceIdentifier do
   defp get_meta(
     destination_data,
     %{data: source_data, serializer: serializer, conn: conn},
-    %{identifier_meta: identifier_metadata_name})
+    %{identifier_meta: identifier_metadata_name, name: name})
   when is_atom(identifier_metadata_name) do
-    apply(serializer, identifier_metadata_name, [source_data, destination_data, conn])
+    apply(serializer, identifier_metadata_name, [name, source_data, destination_data, conn])
   end
 
   defp get_meta(_destination_data, _context, _definition), do: nil
