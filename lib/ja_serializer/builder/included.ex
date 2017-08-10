@@ -67,7 +67,7 @@ defmodule JaSerializer.Builder.Included do
                        |> resource_objects_for(context.conn, definition.serializer, child_opts)
                        |> Enum.reduce({[], included}, fn item, {cont, included} ->
                          key = resource_key(item)
-                         if MapSet.member?(known, key) or Map.has_key?(included, key) do
+                         if Map.has_key?(included, key) do
                            {cont, included}
                          else
                            {[item.data | cont], Map.put(included, key, item)}
